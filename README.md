@@ -56,6 +56,10 @@ Short Form    | Long Form       | Description
 
 ```python3 ctfe7ch.py -u L3o -p thisisapassword https://ctf.example.com  -o ./challenges```
 
+* To download CTF challenges with tags, solves, points information:
+
+```python3 ctfe7ch.py -u L3o -p thisisapassword https://ctf.example.com  -o ./challenges -v```
+
 * To download CTF challenges with files on MEGA:
 
 ```python3 ctfe7ch.py -u L3o -p thisisapassword https://ctf.example.com  -o ./challenges --download-type=mega```
