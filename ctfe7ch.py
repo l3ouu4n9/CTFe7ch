@@ -28,14 +28,15 @@ def banner():
 
 
 class CTFd:
-    def __init__(self, username, password, url, verbose, download_type):
-        self.user          = username
-        self.password      = password
-        self.url           = url
-        self.verbose       = verbose
-        self.download_type = download_type
-        self.user_id       = ""
-        self.nonce         = ""
+    def __init__(self, username, password, url, verbose, category_list, download_type):
+        self.user           = username
+        self.password       = password
+        self.url            = url
+        self.verbose        = verbose
+        self.category_list  = category_list
+        self.download_type  = download_type
+        self.user_id        = ""
+        self.nonce          = ""
 
     def get_nonce(self):
         content = session.get(self.url.format("login")).text
@@ -151,7 +152,22 @@ class CTFd:
         
     def start_download(self, directory):
         categories, challs_data = self.get_challenges()
+
+        if 'all' not in self.category_list:
+            tmp_categories = []
+            for category in categories:
+                if category.lower() in self.category_list:
+                    tmp_categories.append(category)
+            
+            if len(tmp_categories) != len(self.category_list):
+                tmp_categories = [c.lower() for c in tmp_categories]
+                print("[!] Categories {} not found.".format(set(self.category_list).difference(tmp_categories)))
+                print("\n[!] Exiting program.")
+                exit(1)
+
+            categories = tmp_categories
         
+
         for category in categories:
             print("----------------------------\n[=] {} CHALLENGE\n----------------------------".format(category.upper()))
             data = challs_data[category]
@@ -168,6 +184,7 @@ if __name__ == "__main__":
     args.add_argument('url', metavar='BASE_URL', type=str, help='Base URL of the CTF challenge')
     args.add_argument('-o', '--output', metavar='OUTPUT_DIRECTORY', type=str, help='Save the files to directory')
     args.add_argument('-v', '--verbose', help='Increase challenge verbosity, includes tags, solves, and points', action='store_true')
+    args.add_argument('-c', '--category', help='Specify categories to fetch, split with \',\' e.g. web,pwn,"vulncon 2020"', default='all')
     args.add_argument('--download-type', metavar='DOWNLOAD_TYPE', type=str, help='Specify where the challenge files come from, e.g. ctfd, mega', default='ctfd')
     args = args.parse_args()
 
@@ -184,7 +201,17 @@ if __name__ == "__main__":
             else:
                 base_url += '{}'
             
-            ctfd = CTFd(args.user, args.password, base_url, args.verbose, args.download_type)
+            category_list = [c.lower() for c in list(args.category.split(','))]
+            
+            ctfd = CTFd(
+                args.user,
+                args.password,
+                base_url,
+                args.verbose,
+                category_list,
+                args.download_type
+            )
+
             ctfd.get_nonce()
             ctfd.login()
             ctfd.start_download(args.output)
