@@ -17,7 +17,7 @@ git clone https://github.com/l3ouu4n9/CTFe7ch.git
 CTFe7ch currently supports **Python 3** only.
 
 ## Dependencies:
-CTFe7ch depends on the `requests`, `bs4`, `argparse`, and `importlib` python modules.
+CTFe7ch depends on the `requests`, `bs4`, `argparse`, `importlib`, and `tqdm` python modules.
 
 These dependencies can be installed using the requirements file:
 

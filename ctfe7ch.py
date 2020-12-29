@@ -13,6 +13,7 @@ import requests
 import importlib
 from bs4 import BeautifulSoup
 from argparse import ArgumentParser
+from tqdm import tqdm
 
 
 def banner():
@@ -117,10 +118,11 @@ class CTFd:
                 target = filepath + filename
                 try:
                     print(" |  Downloading {}".format(filename))
-                    data = session.get(url).content
-                    with open(target, 'wb') as f:
-                        f.write(data)
-                        f.close()
+                    response = session.get(url, stream=True)
+                    with tqdm.wrapattr(open(target, "wb"), "write",
+                            miniters=1, total=int(response.headers.get('content-length', 0))) as fout:
+                        for chunk in response.iter_content(chunk_size=4096):
+                            fout.write(chunk)
 
                 except IOError:
                     print("[!] Failed to download the challenge {}.".format(challname))
