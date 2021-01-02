@@ -15,6 +15,9 @@ from bs4 import BeautifulSoup
 from argparse import ArgumentParser
 from tqdm import tqdm
 
+# My own module
+from gdrive import GDrive
+
 
 def banner():
     print("""
@@ -71,11 +74,11 @@ class CTFd:
                     temp_data.append([data['id'], data['name'].encode('ascii', 'ignore'), data['value']])
             dict_data[category.encode('ascii', 'ignore').decode()] = temp_data
         return categories, dict_data
-        
+
 
     def download_challenge_by_id(self, id, directory):
 
-        response = session.get(self.url.format("api/v1/challenges/%d" % id)).text
+        response = session.get(self.url.format("api/v1/challenges/%d" % id)).text.encode("ascii", "ignore").decode()
         files    = loads(response)['data']['files']
         
         category  = loads(response)['data']['category'].encode("ascii", "ignore").decode().replace(' ', '_')
@@ -112,6 +115,7 @@ class CTFd:
             f.close()
         
         if self.download_type == 'ctfd':
+            original_response = response
             for path in files:
                 url = self.url.format(path)
                 filename = re.findall('/(.*)?token', path)[0].split('/')[-1][:-1]
@@ -123,6 +127,35 @@ class CTFd:
                             miniters=1, total=int(response.headers.get('content-length', 0))) as fout:
                         for chunk in response.iter_content(chunk_size=4096):
                             fout.write(chunk)
+
+                except IOError:
+                    print("[!] Failed to download the challenge {}.".format(challname))
+                    time.sleep(1)
+                    continue
+                except KeyboardInterrupt:
+                    print("\n\n[!] Exiting program.")
+                    exit(1)
+
+            # Check google drive link exists
+            soup = BeautifulSoup(original_response, 'html.parser')
+            a_tags = soup.find_all('a')
+            urls = []
+            for tag in a_tags:
+                try:
+                    a = tag.get('href')
+                    if 'drive.google.com' in a:
+                        urls.append(a[2:-2])
+                except:
+                    pass
+            
+            urls = list(set(urls))
+            
+            for url in urls:
+                file_id = re.findall('/file/d/(.*?)/', url)[0]
+                filename = filepath + GDrive.get_file_name(url)
+                print(" |  Downloading Goolge Drive File from {}".format(challname))
+                try:
+                    GDrive.download_file(file_id, filename)
 
                 except IOError:
                     print("[!] Failed to download the challenge {}.".format(challname))
@@ -148,6 +181,7 @@ class CTFd:
                 except KeyboardInterrupt:
                     print("\n\n[!] Exiting program.")
                     exit(1)
+            
         else:
             print('[!] Failed to download the Challenge {}.')
         
@@ -187,37 +221,34 @@ if __name__ == "__main__":
     args.add_argument('-o', '--output', metavar='OUTPUT_DIRECTORY', type=str, help='Save the files to directory')
     args.add_argument('-v', '--verbose', help='Increase challenge verbosity, includes tags, solves, and points', action='store_true')
     args.add_argument('-c', '--category', help='Specify categories to fetch, split with \',\' e.g. web,pwn,"vulncon 2020"', default='all')
-    args.add_argument('--download-type', metavar='DOWNLOAD_TYPE', type=str, help='Specify where the challenge files come from, e.g. ctfd, mega', default='ctfd')
+    args.add_argument('--download-type', metavar='DOWNLOAD_TYPE', type=str, help='Specify where the challenge files come from, e.g. ctfd, mega', choices=['ctfd', 'mega'], default='ctfd')
     args = args.parse_args()
 
     banner()
     
-    if args.user != None and args.password != None and args.url != None and args.output != None:
-        if args.download_type == 'ctfd' or args.download_type == 'mega':
-            
-            session  = requests.Session()
-            base_url = args.url
-            
-            if not base_url.endswith('/'):
-                base_url += '/{}'
-            else:
-                base_url += '{}'
-            
-            category_list = [c.lower() for c in list(args.category.split(','))]
-            
-            ctfd = CTFd(
-                args.user,
-                args.password,
-                base_url,
-                args.verbose,
-                category_list,
-                args.download_type
-            )
-
-            ctfd.get_nonce()
-            ctfd.login()
-            ctfd.start_download(args.output)
+    if args.user != None and args.password != None and args.url != None and args.output != None:  
+        session  = requests.Session()
+        base_url = args.url
+        
+        if not base_url.endswith('/'):
+            base_url += '/{}'
         else:
-            print('Download Type not supported, Only ctfd or mega')
+            base_url += '{}'
+        
+        category_list = [c.lower() for c in list(args.category.split(','))]
+        
+        ctfd = CTFd(
+            args.user,
+            args.password,
+            base_url,
+            args.verbose,
+            category_list,
+            args.download_type
+        )
+
+        ctfd.get_nonce()
+        ctfd.login()
+        ctfd.start_download(args.output)
+        
     else:
         print('Arguments required, try \'-h\' for help.')
