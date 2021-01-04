@@ -81,8 +81,9 @@ class CTFd:
         response = session.get(self.url.format("api/v1/challenges/%d" % id)).text.encode("ascii", "ignore").decode()
         files    = loads(response)['data']['files']
         
-        category  = loads(response)['data']['category'].encode("ascii", "ignore").decode().replace(' ', '_')
-        challname = loads(response)['data']['name'].encode("ascii", "ignore").decode().replace(' ', '_')
+        category  = loads(response)['data']['category'].encode("ascii", "ignore").decode().replace(' ', '_').replace('/', '_')
+        challname = loads(response)['data']['name'].encode("ascii", "ignore").decode().replace(' ', '_').replace('/', '_')
+        
         filepath  = "{}/{}/{}/".format(directory, category, challname)
         
         description = loads(response)['data']['description'].encode("ascii", "ignore").decode()
@@ -185,7 +186,7 @@ class CTFd:
         else:
             print('[!] Failed to download the Challenge {}.')
         
-        
+
     def start_download(self, directory):
         categories, challs_data = self.get_challenges()
 
