@@ -81,8 +81,16 @@ class CTFd:
         response = session.get(self.url.format("api/v1/challenges/%d" % id)).text.encode("ascii", "ignore").decode()
         files    = loads(response)['data']['files']
         
-        category  = loads(response)['data']['category'].encode("ascii", "ignore").decode().replace(' ', '_').replace('/', '_')
-        challname = loads(response)['data']['name'].encode("ascii", "ignore").decode().replace(' ', '_').replace('/', '_')
+        category  = loads(response)['data']['category'].encode("ascii", "ignore").decode().rstrip()
+        challname = loads(response)['data']['name'].encode("ascii", "ignore").decode().rstrip()
+
+        if challname[0] == ' ':
+            challname = challname[1:]
+        challname = challname.replace(' ', '_').replace('/', '_')
+
+        if category[0] == ' ':
+            category = category[1:]
+        category = category.replace(' ', '_').replace('/', '_')
         
         filepath  = "{}/{}/{}/".format(directory, category, challname)
         
