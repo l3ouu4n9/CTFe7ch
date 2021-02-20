@@ -1,6 +1,6 @@
 # CTFe7ch
 
-CTFe7ch is a python tool designed to download Capture The Flag (CTF) challenges and files. It helps CTFers to gather resources from the competition. Files provided from CTFd framework, MEGA cloud storage, and even google drive are available. Now it only supports CTFs hosted on [CTFd](https://github.com/CTFd/CTFd). It may support other frameworks in the future.
+CTFe7ch is a python tool designed to download Capture The Flag (CTF) challenges and files. It helps CTFers to gather resources from the competition. Files provided from CTFd framework, MEGA cloud storage, and even google drive are available. Now it supports both CTFs hosted on [CTFd](https://github.com/CTFd/CTFd) and [rCTF](https://github.com/redpwn/rctf). It may support other frameworks in the future.
 
 ## Screenshots
 
@@ -41,11 +41,13 @@ Short Form    | Long Form       | Description
 ------------- | -------------   |-------------
 -u            | --username      | Username or email of your login credentials
 -p            | --password      | Password of your login credentials
+-t            | --token         | Token of your login credentials
 -o            | --output        | Save the files to the directory
 -v            | --verbose       | Increase challenge description verbosity, includes tags, solves, and points
 -c            | --category      | Specify categories to fetch, split with "`,`" e.g. web,pwn,"vulncon 2020". Default: all
-|             | --plugin        | Specify the plugin to use
--h            | --help          | show the help message and exit
+|             | --platform      | Specify the platform hosting CTF. e.g. ctfd or rctf. Default: ctfd
+|             | --plugin        | Specify the plugin to use. For now, we only provide mega plugin
+-h            | --help          | Show the help message and exit
 
 ### Examples
 
@@ -59,15 +61,19 @@ Short Form    | Long Form       | Description
 
 * To download CTF challenges with tags, solves, points information:
 
-```python3 ctfe7ch.py -u L3o -p thisisapassword https://ctf.example.com  -o ./challenges -v```
+```python3 ctfe7ch.py -u L3o -p thisisapassword https://ctf.example.com -o ./challenges -v```
 
 * To download CTF challenges with files on MEGA:
 
-```python3 ctfe7ch.py -u L3o -p thisisapassword https://ctf.example.com  -o ./challenges --plugin=mega```
+```python3 ctfe7ch.py -u L3o -p thisisapassword https://ctf.example.com -o ./challenges --plugin=mega```
 
 * To download CTF challenges with files on MEGA, web and pwn categories only:
 
-```python3 ctfe7ch.py -u L3o -p thisisapassword https://ctf.example.com  -o ./challenges --plugin=mega -c web,pwn```
+```python3 ctfe7ch.py -u L3o -p thisisapassword https://ctf.example.com -o ./challenges --plugin=mega -c web,pwn```
+
+* To download CTF challenges hosted on rCTF, using token for login:
+
+```python3 ctfe7ch.py -t mylogintoken https://ctf.example.com -o ./challenges --platform=rctf ```
 
 ## Version
-**Current version is 1.0.0**
+**Current version is 1.1.0**
