@@ -32,13 +32,13 @@ def banner():
 
 
 class CTFd:
-    def __init__(self, username, password, url, verbose, category_list, download_type):
+    def __init__(self, username, password, url, verbose, category_list, plugin):
         self.user           = username
         self.password       = password
         self.url            = url
         self.verbose        = verbose
         self.category_list  = category_list
-        self.download_type  = download_type
+        self.plugin         = plugin
         self.user_id        = ""
         self.nonce          = ""
 
@@ -123,73 +123,74 @@ class CTFd:
             f.write(content)
             f.close()
         
-        if self.download_type == 'ctfd':
-            original_response = response
-            for path in files:
-                url = self.url.format(path)
-                filename = re.findall('/(.*)?token', path)[0].split('/')[-1][:-1]
-                target = filepath + filename
-                try:
-                    print(" |  Downloading {}".format(filename))
-                    response = session.get(url, stream=True)
-                    with tqdm.wrapattr(open(target, "wb"), "write",
-                            miniters=1, total=int(response.headers.get('content-length', 0))) as fout:
-                        for chunk in response.iter_content(chunk_size=4096):
-                            fout.write(chunk)
-
-                except IOError:
-                    print("[!] Failed to download the challenge {}.".format(challname))
-                    time.sleep(1)
-                    continue
-                except KeyboardInterrupt:
-                    print("\n\n[!] Exiting program.")
-                    exit(1)
-
-            # Check google drive link exists
-            soup = BeautifulSoup(original_response, 'html.parser')
-            a_tags = soup.find_all('a')
-            urls = []
-            for tag in a_tags:
-                try:
-                    a = tag.get('href')
-                    if 'drive.google.com' in a:
-                        urls.append(a[2:-2])
-                except:
-                    pass
-            
-            urls = list(set(urls))
-            
-            for url in urls:
-                file_id = re.findall('/file/d/(.*?)/', url)[0]
-                filename = filepath + GDrive.get_file_name(url)
-                print(" |  Downloading Goolge Drive File from {}".format(challname))
-                try:
-                    GDrive.download_file(file_id, filename)
-
-                except IOError:
-                    print("[!] Failed to download the challenge {}.".format(challname))
-                    time.sleep(1)
-                    continue
-                except KeyboardInterrupt:
-                    print("\n\n[!] Exiting program.")
-                    exit(1)
         
-        elif self.download_type == 'mega':
-            urls = list(url[1:-1] for url in re.findall('\(https://mega.nz/file/.*?\)', response))
-            mega = importlib.import_module('mega-plugin')
-            m = mega.init()
-            for url in urls:
-                print(" |  Downloading Mega File from {}".format(challname))
-                try:
-                    mega.download_file(m, url, filepath)
+        original_response = response
+        for path in files:
+            url = self.url.format(path)
+            filename = re.findall('/(.*)?token', path)[0].split('/')[-1][:-1]
+            target = filepath + filename
+            try:
+                print(" |  Downloading {}".format(filename))
+                response = session.get(url, stream=True)
+                with tqdm.wrapattr(open(target, "wb"), "write",
+                        miniters=1, total=int(response.headers.get('content-length', 0))) as fout:
+                    for chunk in response.iter_content(chunk_size=4096):
+                        fout.write(chunk)
 
-                except IOError:
-                    print("[!] Failed to download the challenge {}.".format(challname))
-                    time.sleep(1)
-                    continue
-                except KeyboardInterrupt:
-                    print("\n\n[!] Exiting program.")
-                    exit(1)
+            except IOError:
+                print("[!] Failed to download the challenge {}.".format(challname))
+                time.sleep(1)
+                continue
+            except KeyboardInterrupt:
+                print("\n\n[!] Exiting program.")
+                exit(1)
+
+        # Check google drive link exists
+        soup = BeautifulSoup(original_response, 'html.parser')
+        a_tags = soup.find_all('a')
+        urls = []
+        for tag in a_tags:
+            try:
+                a = tag.get('href')
+                if 'drive.google.com' in a:
+                    urls.append(a[2:-2])
+            except:
+                pass
+        
+        urls = list(set(urls))
+        
+        for url in urls:
+            file_id = re.findall('/file/d/(.*?)/', url)[0]
+            filename = filepath + GDrive.get_file_name(url)
+            print(" |  Downloading Goolge Drive File from {}".format(challname))
+            try:
+                GDrive.download_file(file_id, filename)
+
+            except IOError:
+                print("[!] Failed to download the challenge {}.".format(challname))
+                time.sleep(1)
+                continue
+            except KeyboardInterrupt:
+                print("\n\n[!] Exiting program.")
+                exit(1)
+        
+        if self.plugin == 'mega':
+            urls = list(url[1:-1] for url in re.findall('\(https://mega.nz/file/.*?\)', original_response))
+            if urls:
+                mega = importlib.import_module('mega-plugin')
+                m = mega.init()
+                for url in urls:
+                    print(" |  Downloading Mega File from {}".format(challname))
+                    try:
+                        mega.download_file(m, url, filepath)
+
+                    except IOError:
+                        print("[!] Failed to download the challenge {}.".format(challname))
+                        time.sleep(1)
+                        continue
+                    except KeyboardInterrupt:
+                        print("\n\n[!] Exiting program.")
+                        exit(1)
             
         else:
             print('[!] Failed to download the Challenge {}.')
@@ -230,7 +231,7 @@ if __name__ == "__main__":
     args.add_argument('-o', '--output', metavar='OUTPUT_DIRECTORY', type=str, help='Save the files to directory')
     args.add_argument('-v', '--verbose', help='Increase challenge verbosity, includes tags, solves, and points', action='store_true')
     args.add_argument('-c', '--category', help='Specify categories to fetch, split with \',\' e.g. web,pwn,"vulncon 2020"', default='all')
-    args.add_argument('--download-type', metavar='DOWNLOAD_TYPE', type=str, help='Specify where the challenge files come from, e.g. ctfd, mega', choices=['ctfd', 'mega'], default='ctfd')
+    args.add_argument('--plugin', metavar='PLUGIN', type=str, help='Specify the plugin to use', choices=['mega'], default='')
     args = args.parse_args()
 
     banner()
@@ -252,7 +253,7 @@ if __name__ == "__main__":
             base_url,
             args.verbose,
             category_list,
-            args.download_type
+            args.plugin
         )
 
         ctfd.get_nonce()

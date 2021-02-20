@@ -44,7 +44,7 @@ Short Form    | Long Form       | Description
 -o            | --output        | Save the files to the directory
 -v            | --verbose       | Increase challenge description verbosity, includes tags, solves, and points
 -c            | --category      | Specify categories to fetch, split with "`,`" e.g. web,pwn,"vulncon 2020". Default: all
-|             | --download-type | Specify where the challenge files come from, e.g. ctfd, mega. ctfd mode can detect google drive link as well
+|             | --plugin        | Specify the plugin to use
 -h            | --help          | show the help message and exit
 
 ### Examples
@@ -63,11 +63,11 @@ Short Form    | Long Form       | Description
 
 * To download CTF challenges with files on MEGA:
 
-```python3 ctfe7ch.py -u L3o -p thisisapassword https://ctf.example.com  -o ./challenges --download-type=mega```
+```python3 ctfe7ch.py -u L3o -p thisisapassword https://ctf.example.com  -o ./challenges --plugin=mega```
 
 * To download CTF challenges with files on MEGA, web and pwn categories only:
 
-```python3 ctfe7ch.py -u L3o -p thisisapassword https://ctf.example.com  -o ./challenges --download-type=mega -c web,pwn```
+```python3 ctfe7ch.py -u L3o -p thisisapassword https://ctf.example.com  -o ./challenges --plugin=mega -c web,pwn```
 
 ## Version
 **Current version is 1.0**
