@@ -70,4 +70,4 @@ Short Form    | Long Form       | Description
 ```python3 ctfe7ch.py -u L3o -p thisisapassword https://ctf.example.com  -o ./challenges --plugin=mega -c web,pwn```
 
 ## Version
-**Current version is 1.0**
+**Current version is 1.0.0**
