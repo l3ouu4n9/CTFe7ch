@@ -147,21 +147,47 @@ class CTFd:
                 print("\n\n[!] Exiting program.")
                 exit(1)
 
-        # Check google drive link exists
+        # Check google drive link and google cloud storage exists
         soup = BeautifulSoup(original_response, 'html.parser')
         a_tags = soup.find_all('a')
-        urls = []
+        drive_urls = []
+        storage_urls = []
         for tag in a_tags:
             try:
                 a = tag.get('href')
                 if 'drive.google.com' in a:
-                    urls.append(a[2:-2])
+                    drive_urls.append(a[2:-2])
+                elif 'storage.googleapis' in a:
+                    storage_urls.append(a[2:-2])
             except:
                 pass
+
+        # Get unique
+        drive_urls = list(set(drive_urls))
+        storage_urls = list(set(storage_urls))
+
+        # Download google cloud storage files
+        for url in storage_urls:
+            filename = url.split('/')[-1]
+            target = filepath + filename
+            try:
+                print(" |  Downloading {}".format(filename))
+                response = session.get(url, stream=True)
+                with tqdm.wrapattr(open(target, "wb"), "write",
+                        miniters=1, total=int(response.headers.get('content-length', 0))) as fout:
+                    for chunk in response.iter_content(chunk_size=4096):
+                        fout.write(chunk)
+
+            except IOError:
+                print("[!] Failed to download the challenge {}.".format(challname))
+                time.sleep(1)
+                continue
+            except KeyboardInterrupt:
+                print("\n\n[!] Exiting program.")
+                exit(1)
         
-        urls = list(set(urls))
-        
-        for url in urls:
+        # Download google drive files
+        for url in drive_urls:
             file_id = re.findall('/file/d/(.*?)/', url)[0]
             filename = filepath + GDrive.get_file_name(url)
             print(" |  Downloading Goolge Drive File from {}".format(challname))
@@ -175,7 +201,10 @@ class CTFd:
             except KeyboardInterrupt:
                 print("\n\n[!] Exiting program.")
                 exit(1)
+
         
+        
+        # MEGA
         if self.plugin == 'mega':
             urls = list(url[1:-1] for url in re.findall('\(https://mega.nz/file/.*?\)', original_response))
             if urls:

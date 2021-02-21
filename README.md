@@ -1,6 +1,6 @@
 # CTFe7ch
 
-CTFe7ch is a python tool designed to download Capture The Flag (CTF) challenges and files. It helps CTFers to gather resources from the competition. Files provided from CTFd framework, MEGA cloud storage, and even google drive are available. Now it supports both CTFs hosted on [CTFd](https://github.com/CTFd/CTFd) and [rCTF](https://github.com/redpwn/rctf). It may support other frameworks in the future.
+CTFe7ch is a python tool designed to download Capture The Flag (CTF) challenges and files. It helps CTFers to gather resources from the competition. Files provided from CTFd framework, rCTF framework, MEGA cloud storage, Google Drive, and Google Cloud Storage are all available. Now it supports both CTFs hosted on [CTFd](https://github.com/CTFd/CTFd) and [rCTF](https://github.com/redpwn/rctf). It may support other frameworks in the future.
 
 ## Screenshots
 
@@ -74,6 +74,9 @@ Short Form    | Long Form       | Description
 * To download CTF challenges hosted on rCTF, using token for login:
 
 ```python3 ctfe7ch.py -t mylogintoken https://ctf.example.com -o ./challenges --platform=rctf ```
+
+
+<i>Note: There are no examples for Google Drive and Google Cloud Storage because they can be downloaded automatically. We don't need to provide any other switches.</i>
 
 ## Version
 **Current version is 1.1.0**
