@@ -44,7 +44,10 @@ class CTFd:
 
     def get_nonce(self):
         content = session.get(self.url.format("login")).text
-        self.nonce = re.findall('<input id="nonce" name="nonce" type="hidden" value="(.*)">', content)[0]
+        
+        soup = BeautifulSoup(content, 'html.parser')
+        self.nonce = soup.find_all("input", attrs={"name":"nonce", "type":"hidden"})[0].get("value")
+        
 
     def login(self):
 
@@ -55,16 +58,20 @@ class CTFd:
             "_submit" : "Submit",
         }
         login = session.post(self.url.format("login"), data=login_data).text
-    
-        self.user_id = re.findall("'userId': (.*),", login)[0]
+
         if "incorrect" in login:
             print("Wrong credentials.")
             exit(1)
-        else:
+        
+        try:
+            self.user_id = re.findall("'userId': (.*),", login)[0]
             print("\n[*] Logged in Successfully as {}.\n".format(self.user))
+        except:
+            print("\n[*] Logged in Successfully.\n")
  
     def get_challenges(self):
         challs_data = json.loads(session.get(self.url.format("api/v1/challenges")).text)['data']
+        
         categories = list(set([chall['category'].encode('ascii', 'ignore').decode() for chall in challs_data]))
         
         dict_data = {}
