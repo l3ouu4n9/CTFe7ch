@@ -79,4 +79,4 @@ Short Form    | Long Form       | Description
 <i>Note: There are no examples for Google Drive and Google Cloud Storage because they can be downloaded automatically. We don't need to provide any other switches.</i>
 
 ## Version
-**Current version is 1.2.0**
+**Current version is 1.1.0**
