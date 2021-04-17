@@ -43,8 +43,11 @@ class CTFd:
         self.nonce          = ""
 
     def get_nonce(self):
-        content = session.get(self.url.format("login")).text
-        
+        try:
+            content = session.get(self.url.format("login")).text
+        except:
+            content = session.get(self.url.format("login"), verify=False).text
+
         soup = BeautifulSoup(content, 'html.parser')
         self.nonce = soup.find_all("input", attrs={"name":"nonce", "type":"hidden"})[0].get("value")
         
