@@ -280,7 +280,12 @@ class rCTF:
         headers = {
             "Content-Type": "application/json"
         }
-        login = session.post(self.url.format("api/v1/auth/login"), json=login_data, headers=headers).text
+
+        try:
+            login = session.post(self.url.format("api/v1/auth/login"), json=login_data, headers=headers).text
+        except:
+            login = session.post(self.url.format("api/v1/auth/login"), json=login_data, headers=headers, verify=False).text
+        
         
         if "invalid" in login:
             print("Wrong login token.")
@@ -434,7 +439,11 @@ class CTFx:
         self.password_name  = ""
 
     def get_email_password_name(self):
-        content = session.get(self.url.format("home")).text
+        try:
+            content = session.get(self.url.format("home")).text
+        except:
+            content = session.get(self.url.format("home"), verify=False).text
+        
         
         soup = BeautifulSoup(content, 'html.parser')
         self.email_name = soup.find_all("input", attrs={"type":"email"})[0].get("name")
