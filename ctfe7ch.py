@@ -31,6 +31,22 @@ def banner():
     """)
 
 
+def gdrive_download(url, filepath, challname):
+    file_id = re.findall('/file/d/(.*?)/', url)[0]
+    filename = filepath + GDrive.get_file_name(url)
+    print(" |  Downloading Goolge Drive File from {}".format(challname))
+    try:
+        GDrive.download_file(file_id, filename)
+
+    except IOError:
+        print("[!] Failed to download the challenge {}.".format(challname))
+        time.sleep(1)
+        return
+    except KeyboardInterrupt:
+        print("\n\n[!] Exiting program.")
+        exit(1)
+
+
 class CTFd:
     def __init__(self, username, password, url, verbose, category_list, plugin):
         self.user           = username
@@ -85,8 +101,7 @@ class CTFd:
                     temp_data.append([data['id'], data['name'].encode('ascii', 'ignore'), data['value']])
             dict_data[category.encode('ascii', 'ignore').decode()] = temp_data
         return categories, dict_data
-        
-
+    
 
     def download_challenge_by_id(self, id, directory):
 
@@ -198,21 +213,27 @@ class CTFd:
         
         # Download google drive files
         for url in drive_urls:
-            file_id = re.findall('/file/d/(.*?)/', url)[0]
-            filename = filepath + GDrive.get_file_name(url)
-            print(" |  Downloading Goolge Drive File from {}".format(challname))
-            try:
-                GDrive.download_file(file_id, filename)
+            # Give Folder Link
+            if "/drive/folders/" in url:
+                content = requests.get(url).text
+                soup = BeautifulSoup(content, 'html.parser')
 
-            except IOError:
-                print("[!] Failed to download the challenge {}.".format(challname))
-                time.sleep(1)
-                continue
-            except KeyboardInterrupt:
-                print("\n\n[!] Exiting program.")
-                exit(1)
+                folder = soup.title.string.split(" - G")[0]
+                
+                file_id = re.findall('data-id=\"(.*?)\"', content)
 
-        
+                tmp_filepath = filepath + folder + '/'
+                if not os.path.exists(tmp_filepath):
+                    os.makedirs(tmp_filepath)
+
+                for id in file_id:
+                    link = "https://drive.google.com/file/d/" + id + "/view?usp=sharing"
+                    gdrive_download(link, tmp_filepath, challname)
+
+            # Give File Link
+            else:
+                gdrive_download(url, filepath, challname)
+            
         
         # MEGA
         if self.plugin == 'mega':
@@ -368,20 +389,26 @@ class rCTF:
                 except KeyboardInterrupt:
                     print("\n\n[!] Exiting program.")
                     exit(1)
-            elif 'drive.google.com' in url:
-                file_id = re.findall('/file/d/(.*?)/', url)[0]
-                filename = filepath + GDrive.get_file_name(url)
-                print(" |  Downloading Goolge Drive File from {}".format(challname))
-                try:
-                    GDrive.download_file(file_id, filename)
+            else:
+                # Give Folder Link
+                if "/drive/folders/" in url:
+                    content = requests.get(url).text
+                    soup = BeautifulSoup(content, 'html.parser')
 
-                except IOError:
-                    print("[!] Failed to download the challenge {}.".format(challname))
-                    time.sleep(1)
-                    continue
-                except KeyboardInterrupt:
-                    print("\n\n[!] Exiting program.")
-                    exit(1)
+                    folder = soup.title.string.split(" - G")[0]
+                    
+                    file_id = re.findall('data-id=\"(.*?)\"', content)
+
+                    tmp_filepath = filepath + folder + '/'
+                    if not os.path.exists(tmp_filepath):
+                        os.makedirs(tmp_filepath)
+
+                    for id in file_id:
+                        link = "https://drive.google.com/file/d/" + id + "/view?usp=sharing"
+                        gdrive_download(link, tmp_filepath, challname)
+                # Give File Link
+                else:
+                    gdrive_download(url, filepath, challname)
         
         if self.plugin == 'mega':
             for url in files:
@@ -592,19 +619,25 @@ class CTFx:
         
         # Download google drive files
         for url in drive_urls:
-            file_id = re.findall('/file/d/(.*?)/', url)[0]
-            filename = filepath + GDrive.get_file_name(url)
-            print(" |  Downloading Goolge Drive File from {}".format(challname))
-            try:
-                GDrive.download_file(file_id, filename)
+            # Give Folder Link
+            if "/drive/folders/" in url:
+                content = requests.get(url).text
+                soup = BeautifulSoup(content, 'html.parser')
 
-            except IOError:
-                print("[!] Failed to download the challenge {}.".format(challname))
-                time.sleep(1)
-                continue
-            except KeyboardInterrupt:
-                print("\n\n[!] Exiting program.")
-                exit(1)
+                folder = soup.title.string.split(" - G")[0]
+                
+                file_id = re.findall('data-id=\"(.*?)\"', content)
+
+                tmp_filepath = filepath + folder + '/'
+                if not os.path.exists(tmp_filepath):
+                    os.makedirs(tmp_filepath)
+
+                for id in file_id:
+                    link = "https://drive.google.com/file/d/" + id + "/view?usp=sharing"
+                    gdrive_download(link, tmp_filepath, challname)
+            # Give File Link
+            else:
+                gdrive_download(url, filepath, challname)
 
         
         
