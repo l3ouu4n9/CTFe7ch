@@ -14,6 +14,7 @@ import importlib
 from bs4 import BeautifulSoup
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from tqdm import tqdm
+from urllib.parse import unquote
 
 # My own module
 from gdrive import GDrive
@@ -327,12 +328,23 @@ class rCTF:
             temp_data = []
             for data in challs_data:
                 if data['category'] == category:
-                    temp_data.append([data['name'], data['description'], data['points'], data['solves']])
+                    if data['files']:
+                        temp_data.append([data['name'], data['description'], data['points'], data['solves'], data['files']])
+                    else:
+                        temp_data.append([data['name'], data['description'], data['points'], data['solves']])
             dict_data[category.encode('ascii', 'ignore').decode()] = temp_data
         return categories, dict_data
 
     def download_challenge(self, data, category, directory):
-        files = re.findall('\[Chal.*\]\((.*)\)', data[1])
+        
+        # If data['files'] exist
+        files = []
+        if len(data) == 5:
+            for item in data[4]:
+                files.append(unquote(item['url']))
+        else:
+            files = re.findall('\[Chal.*\]\((.*)\)', data[1])
+        
         challname = data[0]
         if challname[0] == ' ':
             challname = challname[1:]
@@ -452,6 +464,7 @@ class rCTF:
             datas = challs_data[category]
             for data in datas:
                 self.download_challenge(data, category, directory)
+                
 
 
 class CTFx:
